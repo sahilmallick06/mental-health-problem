@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>MindCare — Student Mental Health Support</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{
+  --bg1:#667eea; --bg2:#764ba2; --card:rgba(255,255,255,0.12); --glass:rgba(255,255,255,0.06);
+  --accent:#f093fb; --muted:rgba(255,255,255,0.9);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+  color:#fff;
+  background: linear-gradient(120deg,var(--bg1),var(--bg2));
+}
+.logo{position:absolute;top:18px;left:22px;font-weight:700;background:linear-gradient(90deg,#fff,#f093fb);
+-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:1.2rem}
+.hero{min-height:320px;display:flex;align-items:center;justify-content:center;text-align:center;padding:60px 20px;
+background-image:linear-gradient(180deg, rgba(10,10,20,0.18), rgba(10,10,20,0.18)),
+url("https://images.unsplash.com/photo-1505751172876-fa1923c5c528?q=80&w=1600&auto=format&fit=crop");
+background-size:cover;background-position:center;border-bottom: 1px solid rgba(255,255,255,0.06);}
+.hero h1{font-size:2.4rem;margin:0 0 12px;font-weight:800;}
+.hero p{margin:0 0 18px;opacity:0.95;font-size:1rem;}
+.hero .cta{display:inline-block;background:linear-gradient(90deg,#ffd27a,#ff7bb0);color:#111;
+padding:12px 20px;border-radius:30px;font-weight:700;text-decoration:none;}
+.container{max-width:1100px;margin:30px auto;padding:0 20px}
+.grid{display:grid;grid-template-columns:1fr 420px;gap:24px}
+.card{background:var(--card);padding:20px;border-radius:14px;backdrop-filter:blur(6px)}
+.question{font-size:1.05rem;font-weight:600;margin-bottom:14px}
+.options{display:flex;flex-direction:column;gap:10px}
+.opt{background:rgba(255,255,255,0.09);padding:12px 14px;border-radius:10px;cursor:pointer}
+.opt:hover{background:linear-gradient(90deg,#ffffff15,#ffffff08)}
+.opt.selected{background:linear-gradient(90deg,#ffd27a,#ff7bb0);color:#111}
+.progress{height:10px;background:rgba(255,255,255,0.06);border-radius:6px;overflow:hidden;margin-top:12px}
+.progress>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffd27a,#ff7bb0)}
+.linkbtn{background:#fff;color:#222;padding:8px 12px;border-radius:8px;text-decoration:none;font-weight:700;cursor:pointer}
+footer{text-align:center;padding:18px 10px;opacity:0.95;font-size:0.95rem;margin-top:30px}
+.muted{opacity:0.8;font-size:0.95rem}
+.media{display:flex;gap:10px;align-items:center;margin-top:10px}
+.media img{width:48px;height:48px;border-radius:8px;object-fit:cover}
+.sos div{margin-bottom:6px}
+@media(max-width:980px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="logo">🧠 MindCare</div>
+
+<section class="hero">
+  <div>
+    <h1>MindCare — Mental Health & Support for Students</h1>
+    <p>Track your mental health, discover areas needing care, and connect with counselors.</p>
+    <a class="cta" href="#introForm">Start Assessment</a>
+  </div>
+</section>
+
+<main class="container">
+
+<!-- Intro Form -->
+<div class="card" id="introForm">
+  <h2>Enter Your Details</h2>
+  <form id="userForm" style="display:grid;gap:10px">
+    <input type="text" id="uName" placeholder="Full Name" required>
+    <input type="number" id="uAge" placeholder="Age" required>
+    <select id="uGender" required>
+      <option value="">Select Gender</option>
+      <option>Male</option><option>Female</option><option>Other</option>
+    </select>
+    <input type="email" id="uEmail" placeholder="Email" required>
+    <button type="submit" class="linkbtn">Begin Assessment</button>
+  </form>
+</div>
+
+<!-- Main Grid -->
+<div class="grid" style="margin-top:20px">
+
+<!-- Quiz -->
+<div class="card" id="quiz-card" style="display:none">
+  <h2>Self-assessment</h2>
+  <div id="qBox">
+    <div class="question" id="qText">Click "Begin Assessment" above.</div>
+    <div class="options" id="optionList"></div>
+    <div class="progress"><i id="progFill"></i></div>
+    <div style="margin-top:12px;display:flex;justify-content:space-between">
+      <button id="prevBtn" class="linkbtn" style="display:none" onclick="goPrev()">← Prev</button>
+      <button id="nextBtn" class="linkbtn" onclick="skipOrNext()">Next →</button>
+    </div>
+    <div id="qCount" style="margin-top:10px;font-size:0.9rem"></div>
+  </div>
+</div>
+
+<!-- Live Summary & SOS -->
+<aside>
+  <div class="card">
+    <h2>Live Summary</h2>
+    <canvas id="resultChart" width="300" height="240"></canvas>
+    <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="linkbtn" onclick="downloadReport()">Download Report</button>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:18px">
+    <h2>SOS — Immediate Help</h2>
+    <div class="sos" style="margin-top:8px;">
+      <div>Student Helpline (India): <strong>1800-599-0019</strong></div>
+      <div>NIMHANS Helpline: <strong>080 46110007</strong></div>
+      <div>Emergency: <strong>112</strong></div>
+    </div>
+    <div style="margin-top:12px;text-align:center">
+      <a href="tel:18005990019" class="linkbtn">Call Now</a>
+    </div>
+  </div>
+</aside>
+</div>
+
+<!-- Exercise & Media -->
+<section style="margin-top:28px;">
+  <div class="card">
+    <h2>Exercise & Calm Media</h2>
+    <p class="muted">Short videos & audio to help students relax and stay active.</p>
+    <div style="margin-top:12px; display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:12px">
+      <div style="background:linear-gradient(90deg,#fff2e6,#fff); padding:12px; border-radius:10px">
+        <strong>Guided Breathing</strong>
+        <div style="margin-top:8px">
+          <iframe width="100%" height="150" src="https://www.youtube.com/embed/inpok4MKVLM" frameborder="0" allowfullscreen></iframe>
+        </div>
+      </div>
+      <div style="background:linear-gradient(90deg,#f0f9ff,#f9f0ff); padding:12px; border-radius:10px">
+        <strong>Quick Stretch</strong>
+        <div style="margin-top:8px">
+          <iframe width="100%" height="150" src="https://www.youtube.com/embed/UBMk30rjy0o" frameborder="0" allowfullscreen></iframe>
+        </div>
+      </div>
+      <div style="background:linear-gradient(90deg,#fff2f7,#f0fff4); padding:12px; border-radius:10px">
+        <strong>Lo-fi / Focus Music</strong>
+        <div style="margin-top:8px">
+          <iframe width="100%" height="150" src="https://www.youtube.com/embed/t8yVk0bm684?si=JXIqiNtes1DEtL9Z" frameborder="0" allowfullscreen></iframe>
+        </div>
+      </div>
+      <div style="background:linear-gradient(90deg,#fffef0,#f4f0ff); padding:12px; border-radius:10px">
+        <strong>Guided Yoga</strong>
+        <div style="margin-top:8px">
+          <iframe width="100%" height="150" src="https://www.youtube.com/embed/pY-o_OAFmBU" frameborder="0" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Consult Form -->
+<section id="consult" style="margin-top:28px;">
+  <div class="card">
+    <h2>Connect with a Psychologist</h2>
+    <p class="muted">Forward your request to partnered psychologists for an online consult.</p>
+    <form id="consultForm" style="margin-top:12px; display:grid; gap:8px; grid-template-columns:1fr">
+      <input type="text" id="cName" placeholder="Your name" required>
+      <input type="number" id="cAge" placeholder="Age" required>
+      <input type="email" id="cEmail" placeholder="Email" required>
+      <textarea id="cConcern" placeholder="Brief description" rows="4"></textarea>
+      <div style="display:flex;gap:8px">
+        <button type="button" class="linkbtn" onclick="submitConsult()">Request Consultation</button>
+        <button type="button" class="linkbtn" onclick="fillDemo()">Autofill Demo</button>
+      </div>
+    </form>
+    <div id="consultMsg" style="margin-top:8px; font-size:0.95rem"></div>
+  </div>
+</section>
+
+<!-- Quick Resources -->
+<section style="margin-top:28px;">
+  <div class="card">
+    <h2>Quick Resources</h2>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin-top:12px">
+      <div style="background:rgba(255,255,255,0.08);padding:12px;border-radius:10px">
+        <strong>Food Tips</strong>
+        <ul style="margin-top:8px">
+          <li>Eat leafy greens & vegetables</li>
+          <li>Include nuts & seeds</li>
+          <li>Omega-3 rich foods (salmon, flaxseed)</li>
+        </ul>
+      </div>
+      <div style="background:rgba(255,255,255,0.08);padding:12px;border-radius:10px">
+        <strong>Exercise Tips</strong>
+        <ul style="margin-top:8px">
+          <li>Daily 20–30 min walk</li>
+          <li>Stretching / Yoga</li>
+          <li>Breathing exercises</li>
+        </ul>
+      </div>
+      <div style="background:rgba(255,255,255,0.08);padding:12px;border-radius:10px">
+        <strong>Lifestyle Tips</strong>
+        <ul style="margin-top:8px">
+          <li>Reduce screen time</li>
+          <li>Journaling / Meditation</li>
+          <li>Maintain sleep schedule</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>© 2025 MindCare — Prototype for Student Well-being</footer>
+
+<script>
+// Questions & Options
+const QUESTIONS=[
+  {q:"In the past 2 weeks, how often have you felt little interest or pleasure in doing things?",cat:"Depression"},
+  {q:"How often have you felt down, depressed, or hopeless?",cat:"Depression"},
+  {q:"Do you find it difficult to concentrate on your studies?",cat:"Depression"},
+  {q:"Have you felt tired or had little energy?",cat:"Depression"},
+  {q:"Do you feel you have lost interest in hobbies or friends?",cat:"Depression"},
+  {q:"Do you feel hopeless about the future?",cat:"Depression"},
+
+  {q:"How often do you feel nervous, anxious, or on edge?",cat:"Anxiety"},
+  {q:"Do you experience sudden feelings of panic or fear?",cat:"Anxiety"},
+  {q:"Do you have physical symptoms like fast heartbeat or sweating during worry?",cat:"Anxiety"},
+  {q:"How often are you unable to control worrying once it starts?",cat:"Anxiety"},
+  {q:"Does worry interfere with your studies or sleep?",cat:"Anxiety"},
+
+  {q:"How often do you feel overwhelmed by academic responsibilities?",cat:"Stress"},
+  {q:"Do you get irritated or lose temper easily over small things?",cat:"Stress"},
+  {q:"Do you find it difficult to relax after a busy day?",cat:"Stress"},
+  {q:"Do you feel regularly pressured to meet expectations?",cat:"Stress"},
+  {q:"How often do you feel mentally exhausted at the end of the day?",cat:"Stress"},
+
+  {q:"Do you have trouble falling asleep even when tired?",cat:"Sleep"},
+  {q:"How often do you wake up during the night or too early in the morning?",cat:"Sleep"},
+  {q:"Do you feel refreshed when you wake up?",cat:"SleepReverse"},
+  {q:"Do you nap frequently during the day because you are not rested?",cat:"Sleep"},
+
+  {q:"How often do you feel angry or easily annoyed?",cat:"Anger"},
+  {q:"Do you have urges to shout or break things when upset?",cat:"Anger"},
+  {q:"Do you find it difficult to control angry reactions?",cat:"Anger"}
+];
+const OPTIONS=[
+  {text:"Not at all",val:0},{text:"Several days",val:1},
+  {text:"More than half the days",val:2},{text:"Nearly every day",val:3}
+];
+let currentIndex=0,answers=Array(QUESTIONS.length).fill(null);
+const qText=document.getElementById("qText"),optionList=document.getElementById("optionList"),
+progFill=document.getElementById("progFill"),qCount=document.getElementById("qCount"),
+prevBtn=document.getElementById("prevBtn"),nextBtn=document.getElementById("nextBtn");
+const ctx=document.getElementById("resultChart").getContext("2d");
+const categories=["Depression","Anxiety","Stress","Sleep","Anger"];
+let categoryScores={Depression:0,Anxiety:0,Stress:0,Sleep:0,Anger:0};
+const chart=new Chart(ctx,{type:'bar',data:{labels:categories,datasets:[{label:'% Severity',data:[0,0,0,0,0],backgroundColor:['#ff9999','#66b3ff','#99ff99','#ffcc99','#c2c2f0'],borderRadius:6}]} ,options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,max:100,ticks:{color:'#fff'}},x:{ticks:{color:'#fff'}}},plugins:{legend:{display:false},tooltip:{enabled:true}}}});
+
+// Start Assessment
+document.getElementById("userForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  document.getElementById("introForm").style.display="none";
+  document.getElementById("quiz-card").style.display="block";
+  showQuestion(0);
+});
+
+function showQuestion(i){
+  currentIndex=i;const item=QUESTIONS[i];
+  qText.innerText=item.q;
+  optionList.innerHTML="";
+  OPTIONS.forEach((opt,j)=>{
+    const d=document.createElement("div");d.className="opt";d.tabIndex=0;d.role="button";d.innerText=opt.text;
+    if(answers[i]===opt.val)d.classList.add("selected");
+    d.addEventListener("click",()=>selectOption(j));
+    d.addEventListener("keydown",(e)=>{if(e.key==='Enter')selectOption(j)});
+    optionList.appendChild(d);
+  });
+  progFill.style.width=Math.round((i/QUESTIONS.length)*100)+"%";
